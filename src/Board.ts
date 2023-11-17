@@ -1,5 +1,4 @@
-import {Block, HorizontalLine, Structure, VerticalLine} from "./Structure";
-import {AppConstants} from './AppConstants';
+import {Block, HorizontalLine, Structure, VerticalLine} from './Structure';
 import {Field} from './Field';
 
 export class Board {
@@ -8,11 +7,19 @@ export class Board {
     blocks: Block[];
     horizontalLine: HorizontalLine[];
     verticalLine: VerticalLine[];
-    constructor() {
-        for (let y = 1; y <= AppConstants.FIELDS_IN_CORRECT_STRUCTURE; y++) {
-            for (let x = 1; x <= AppConstants.FIELDS_IN_CORRECT_STRUCTURE; x++) {
+    fieldsInCorrectStructure: number;
+    lengthOfBlockEdge: number;
+
+    constructor(_fieldsInCorrectStructure: number, _lengthOfBlockEdge: number) {
+        if (_fieldsInCorrectStructure !== _lengthOfBlockEdge * _lengthOfBlockEdge) {
+            throw Error('Incorrect board size, length of block to square should be equal length of line.');
+        }
+        this.fieldsInCorrectStructure = _fieldsInCorrectStructure;
+        this.lengthOfBlockEdge = _lengthOfBlockEdge;
+        for (let y = 1; y <= this.fieldsInCorrectStructure; y++) {
+            for (let x = 1; x <= this.fieldsInCorrectStructure; x++) {
                 const field = new Field(x, y);
-                field.value = x;
+                field.value = 0;
                 this.fields.push(field);
             }
         }
@@ -24,11 +31,13 @@ export class Board {
         this.structures.push(this.verticalLine);
     }
 
-    getFieldsIntoStructure<T extends Structure>(type: (new () => T)) {
-        const structure = new Array(AppConstants.FIELDS_IN_CORRECT_STRUCTURE).fill(1).map(() => new type());
+    getFieldsIntoStructure<T extends Structure>(type: (new (fieldsInLine, length) => T)) {;
+        const structure = new Array(this.fieldsInCorrectStructure).fill(1)
+            .map(() => new type(this.fieldsInCorrectStructure, this.lengthOfBlockEdge));
+
         this.fields.forEach(f => {
-            // @ts-ignore
-            const index = type.getIndexByPosition(f);
+            // @ts-ignore,
+            const index = structure[0].getIndexByPosition(f);
             structure[index].fields.push(f);
         });
         return structure;
@@ -46,16 +55,16 @@ export class Board {
         let s = '';
         this.fields.forEach(f => {
             s += f.value;
-            if (f.x === AppConstants.FIELDS_IN_CORRECT_STRUCTURE) {
+            if (f.x === this.fieldsInCorrectStructure && f.y < this.fieldsInCorrectStructure) {
                 s += '\n';
             }
-            if (f.y % AppConstants.FIELDS_IN_SMALL_STRUCTURE === 0 && f.x === AppConstants.FIELDS_IN_CORRECT_STRUCTURE) {
+            if (f.y % this.lengthOfBlockEdge === 0 && f.x === this.fieldsInCorrectStructure && f.y < this.fieldsInCorrectStructure) {
                 s += '\n';
             }
-            if (f.x < AppConstants.FIELDS_IN_CORRECT_STRUCTURE) {
+            if (f.x < this.fieldsInCorrectStructure) {
                 s+= ' ';
             }
-            if (f.x % AppConstants.FIELDS_IN_SMALL_STRUCTURE === 0 && f.x < AppConstants.FIELDS_IN_CORRECT_STRUCTURE) {
+            if (f.x % this.lengthOfBlockEdge === 0 && f.x < this.fieldsInCorrectStructure) {
                 s += ' ';
             }
         });
