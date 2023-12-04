@@ -1,5 +1,8 @@
 import {Board} from './Board';
-const b = new Board(9, 3);
+var argv = require('minimist')(process.argv.slice(2));
+console.log(argv.s);
+const b = new Board(argv.s * argv.s, argv.s);
+b.generate();
 // b.fields.forEach(f => f.value = 0)
 // b.blocks[0].fields.forEach(f => f.value = 0);
 //b.horizontalLine[0].fields.forEach(f => f.value = 0);
